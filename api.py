@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Dict
-from datetime import datetime
+from datetime import datetime, UTC
 
 app = FastAPI()
 
@@ -37,8 +37,8 @@ def get_sensor(sensor_id: int):
 @app.post("/sensors")
 def create_sensor(sensor: Sensor):
     global sensor_id_counter
-    sensor_data = sensor.dict()
-    sensor_data["timestamp"] = datetime.utcnow().isoformat()
+    sensor_data = sensor.model_dump()
+    sensor_data["timestamp"] = datetime.now(UTC).isoformat()
     sensors[sensor_id_counter] = sensor_data
     sensor_id_counter += 1
     return {"message": "Sensor created", "id": sensor_id_counter - 1}
