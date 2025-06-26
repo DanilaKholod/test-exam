@@ -14,7 +14,7 @@ def test_create_student_success():
         "last_name": "Ivanov",
         "group": "CS-101",
         "email": "ivanov@example.com",
-        "status": "active"
+        "is_active": True
     }
     response = client.post("/students", json=student_data)
     assert response.status_code == 200
@@ -34,7 +34,7 @@ def test_get_all_students_nonempty():
         "last_name": "Petrov",
         "group": "CS-102",
         "email": "petrov@example.com",
-        "status": "inactive"
+        "is_active": False
     }
     post_response = client.post("/students", json=student_data)
     student_id = post_response.json()["id"]
@@ -51,20 +51,20 @@ def test_get_active_students():
         "last_name": "Smirnova",
         "group": "CS-103",
         "email": "anna@example.com",
-        "status": "active"
+        "is_active": True
     })
     client.post("/students", json={
         "first_name": "Oleg",
         "last_name": "Sidorov",
         "group": "CS-104",
         "email": "oleg@example.com",
-        "status": "inactive"
+        "is_active": False
     })
     response = client.get("/students/active")
     assert response.status_code == 200
     active_students = response.json()
     for student in active_students.values():
-        assert student["status"] == "active"
+        assert student["is_active"] is True
 
 def test_get_student_success():
     student_data = {
@@ -72,7 +72,7 @@ def test_get_student_success():
         "last_name": "Kuznetsova",
         "group": "CS-105",
         "email": "maria@example.com",
-        "status": "active"
+        "is_active": True
     }
     post_response = client.post("/students", json=student_data)
     student_id = post_response.json()["id"]
@@ -93,7 +93,7 @@ def test_delete_student_success():
         "last_name": "Sergeev",
         "group": "CS-106",
         "email": "sergey@example.com",
-        "status": "inactive"
+        "is_active": False
     }
     post_response = client.post("/students", json=student_data)
     student_id = post_response.json()["id"]
