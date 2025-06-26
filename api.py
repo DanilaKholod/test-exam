@@ -1,52 +1,48 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Dict
-from datetime import datetime, UTC
+from enum import Enum
 
 app = FastAPI()
 
-# Модель данных
-class Sensor(BaseModel):
-    name: str
-    location: str
-    temperature: float
-    humidity: float
+class StatusEnum(str, Enum):
+    active = "active"
+    inactive = "inactive"
 
-# Хранилище данных
-sensors: Dict[int, dict] = {}
-sensor_id_counter = 1
+class Student(BaseModel):
+    first_name: str
+    last_name: str
+    group: str
+    email: EmailStr
+    status: StatusEnum
 
-# Получить статус сервера
-@app.get("/status")
-def get_status():
-    return {"status": "online"}
+students: Dict[int, dict] = {}
+student_id_counter = 1
 
-# Получить список всех датчиков
-@app.get("/sensors")
-def get_all_sensors():
-    return sensors
+@app.get("/students")
+def get_all_students():
+    return students
 
-# Получить данные одного датчика по ID
-@app.get("/sensors/{sensor_id}")
-def get_sensor(sensor_id: int):
-    if sensor_id not in sensors:
-        raise HTTPException(status_code=404, detail="Sensor not found")
-    return sensors[sensor_id]
+@app.get("/students/active")
+def get_active_students():
+    return {sid: s for sid, s in students.items() if s["status"] == StatusEnum.active}
 
-# Добавить новый датчик
-@app.post("/sensors")
-def create_sensor(sensor: Sensor):
-    global sensor_id_counter
-    sensor_data = sensor.model_dump()
-    sensor_data["timestamp"] = datetime.now(UTC).isoformat()
-    sensors[sensor_id_counter] = sensor_data
-    sensor_id_counter += 1
-    return {"message": "Sensor created", "id": sensor_id_counter - 1}
+@app.get("/students/{student_id}")
+def get_student(student_id: int):
+    if student_id not in students:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return students[student_id]
 
-# Удалить датчик
-@app.delete("/sensors/{sensor_id}")
-def delete_sensor(sensor_id: int):
-    if sensor_id not in sensors:
-        raise HTTPException(status_code=404, detail="Sensor not found")
-    del sensors[sensor_id]
-    return {"message": "Sensor deleted"}
+@app.post("/students")
+def create_student(student: Student):
+    global student_id_counter
+    students[student_id_counter] = student.model_dump()
+    student_id_counter += 1
+    return {"message": "Student created", "id": student_id_counter - 1}
+
+@app.delete("/students/{student_id}")
+def delete_student(student_id: int):
+    if student_id not in students:
+        raise HTTPException(status_code=404, detail="Student not found")
+    del students[student_id]
+    return {"message": "Student deleted"}
